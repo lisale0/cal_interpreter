@@ -1,5 +1,5 @@
 from enum import Enum, auto
-import doctest
+
 
 class TokenType(Enum):
     NUMBER = auto()
@@ -22,6 +22,13 @@ class Token:
 
     def __str__(self):
         return "{0} {1} {2}".format(self.type, self.lexeme, self.literal)
+
+
+class BytecodeInst(Enum):
+    ADD: 1
+    SUB: 2
+    MUL: 3
+    DIV: 4
 
 
 class BinaryExpr:
@@ -188,12 +195,50 @@ def eval(ast):
     else:
         raise Exception('Invalid AST node type')
 
+what_to_execute = {
+    "instructions": [("LOAD_VALUE", 0),  # the first number
+                     ("LOAD_VALUE", 1),  # the second number
+                     ("ADD_TWO_VALUES", None),
+                     ("PRINT_ANSWER", None)],
+    "numbers": [7, 5] }
 
+class Interpreter:
+    def __init__(self):
+        self.stack = []
+
+    def LOAD_VALUE(self, number):
+        self.stack.append(number)
+
+    def PRINT_ANSWER(self):
+        answer = self.stack.pop()
+        print(answer)
+
+    def ADD_TWO_VALUES(self):
+        first_num = self.stack.pop()
+        second_num = self.stack.pop()
+        total = first_num + second_num
+        self.stack.append(total)
+
+    def run_code(self, what_to_execute):
+        instructions = what_to_execute["instructions"]
+        numbers = what_to_execute["numbers"]
+        for each_step in instructions:
+            instruction, argument = each_step
+            if instruction == "LOAD_VALUE":
+                number = numbers[argument]
+                self.LOAD_VALUE(number)
+            elif instruction == "ADD_TWO_VALUES":
+                self.ADD_TWO_VALUES()
+            elif instruction == "PRINT_ANSWER":
+                self.PRINT_ANSWER()
 
 if __name__ == "__main__":
     # cannot evaluate/tokenize negative numbers yet
-    line1 = "5 * (2 - (3 + 4))"
-    scanner = Scanner(line1)
-    tokens = scanner.scan_tokens()
-    ast = Parser(tokens).parse()
-    assert eval(ast) == -25.0
+    # line1 = "5 * (2 - (3 + 4))"
+    # scanner = Scanner(line1)
+    # tokens = scanner.scan_tokens()
+    # ast = Parser(tokens).parse()
+    # assert eval(ast) == -25.0
+
+    interpreter = Interpreter()
+    interpreter.run_code(what_to_execute)
